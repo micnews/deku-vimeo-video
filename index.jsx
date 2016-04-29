@@ -1,4 +1,4 @@
-import {element} from 'deku';
+import element from 'virtual-element';
 
 export default {
   render: function ({ props, id }) {

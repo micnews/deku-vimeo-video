@@ -1,10 +1,11 @@
 import test from 'tape';
+import element from 'virtual-element';
 import VimeoVideo from './index.jsx';
-import {string, element} from 'deku';
+import {tree, renderString} from 'deku';
 import tsml from 'tsml';
 
 test('VimeoVideo embed state', t => {
-  const html = string.render(<VimeoVideo vimeoId='156236882' />);
+  const html = renderString(tree(<VimeoVideo vimeoId='156236882' />));
 
   t.equal(html, tsml`
     <div class="vimeo-video vimeo-video--opened">
@@ -14,7 +15,7 @@ test('VimeoVideo embed state', t => {
 });
 
 test('VimeoVideo embed state autoplay', t => {
-  const html = string.render(<VimeoVideo vimeoId='156236882' autoplay={true} />);
+  const html = renderString(tree(<VimeoVideo vimeoId='156236882' autoplay={true} />));
 
   t.equal(html, tsml`
     <div class="vimeo-video vimeo-video--opened">
@@ -24,7 +25,7 @@ test('VimeoVideo embed state autoplay', t => {
 });
 
 test('VimeoVideo thumbnail state', t => {
-  const html = string.render(<VimeoVideo vimeoId='156236882' loaded={false} thumbnailSrc='//example.com/image.jpg' />);
+  const html = renderString(tree(<VimeoVideo vimeoId='156236882' loaded={false} thumbnailSrc='//example.com/image.jpg' />));
 
   t.equal(html, tsml`
     <div class="vimeo-video">
