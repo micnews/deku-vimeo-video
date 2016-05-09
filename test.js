@@ -41,3 +41,12 @@ test('VimeoVideo thumbnail state', t => {
     </div>`);
   t.end();
 });
+
+test('VimeoVideo custom thumbnail', function (t) {
+  const customThumbnail = <div>OK</div>;
+  var html = renderString(tree(<VimeoVideo customThumbnail={customThumbnail} loaded={false} vimeoId='156236882' />));
+
+  t.equal(html, tsml`
+    <div class="vimeo-video"><div>OK</div></div>`);
+  t.end();
+});
