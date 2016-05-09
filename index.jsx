@@ -7,20 +7,22 @@ export default {
     const thumbnailSrc = props.thumbnailSrc || '';
     const src = `https://player.vimeo.com/video/${props['vimeoId']}${autoplay ? '?autoplay=1' : ''}`;
 
+    const thumbnail = props.customThumbnail || (<div>
+      <div class='vimeo-video__image' style={`background-image: url(${thumbnailSrc});`}></div>
+      <div class='vimeo-video__play-btn vimeo-video__play-btn--hover'>
+        <div class='vimeo-video__play-btn__image'></div>
+      </div>
+      <div class='vimeo-video__play-btn'>
+        <div class='vimeo-video__play-btn__image'></div>
+      </div>
+    </div>);
+
     const content = loaded
     /* eslint-disable */
       ? <iframe class='vimeo-video__frame' src={src} frameborder='0'
         webkitallowfullscreen mozallowfullscreen allowfullscreen id={elementId(id)} />
     /* eslint-enable */
-      : <div>
-          <div class='vimeo-video__image' style={`background-image: url(${thumbnailSrc});`}></div>
-          <div class='vimeo-video__play-btn vimeo-video__play-btn--hover'>
-            <div class='vimeo-video__play-btn__image'></div>
-          </div>
-          <div class='vimeo-video__play-btn'>
-            <div class='vimeo-video__play-btn__image'></div>
-          </div>
-        </div>;
+      : thumbnail;
 
     const className = loaded ? 'vimeo-video vimeo-video--opened' : 'vimeo-video';
     return <div class={className} onClick={props.onClick}>{content}</div>;
