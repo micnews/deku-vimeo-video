@@ -9,7 +9,7 @@ test('VimeoVideo embed state', t => {
 
   t.equal(html, tsml`
     <div class="vimeo-video vimeo-video--opened">
-      <iframe class="vimeo-video__frame" src="https://player.vimeo.com/video/156236882" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true" id="vimeo-video__frame--video-id-undefined"></iframe>
+      <iframe class="vimeo-video__frame" src="https://player.vimeo.com/video/156236882?api=1&player_id=vimeo-video__frame--video-id-default" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true" id="vimeo-video__frame--video-id-default"></iframe>
     </div>`);
   t.end();
 });
@@ -19,7 +19,7 @@ test('VimeoVideo embed state autoplay', t => {
 
   t.equal(html, tsml`
     <div class="vimeo-video vimeo-video--opened">
-      <iframe class="vimeo-video__frame" src="https://player.vimeo.com/video/156236882?autoplay=1" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true" id="vimeo-video__frame--video-id-undefined"></iframe>
+      <iframe class="vimeo-video__frame" src="https://player.vimeo.com/video/156236882?api=1&player_id=vimeo-video__frame--video-id-default&autoplay=1" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true" id="vimeo-video__frame--video-id-default"></iframe>
     </div>`);
   t.end();
 });
@@ -49,4 +49,90 @@ test('VimeoVideo custom thumbnail', function (t) {
   t.equal(html, tsml`
     <div class="vimeo-video"><div>OK</div></div>`);
   t.end();
+});
+
+test('VimeoVideo client rendering with ID', t => {
+  const props = {
+    vimeoId: '156236882',
+    loaded: true,
+    thumbnailSrc: '//example.com/image.jpg'
+  };
+
+  const id = 12345;
+  const html = renderString(tree(VimeoVideo.render({ props, id })));
+
+  t.equal(html, tsml`
+    <div class="vimeo-video vimeo-video--opened">
+      <iframe class="vimeo-video__frame" src="https://player.vimeo.com/video/156236882?api=1&player_id=vimeo-video__frame--video-id-12345" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen="true" id="vimeo-video__frame--video-id-12345"></iframe>
+    </div>`);
+  t.end();
+});
+
+test('VimeoVideo client API', t => {
+  t.plan(7);
+
+  const props = {
+    vimeoId: '156236882',
+    loaded: true,
+    thumbnailSrc: '//example.com/image.jpg',
+    onPlay: () => t.pass('play'),
+    onPause: () => t.pass('pause'),
+    onFinish: () => t.pass('finish')
+  };
+
+  const id = 12345;
+  const playerId = 'vimeo-video__frame--video-id-12345';
+  renderString(tree(VimeoVideo.render({ props, id })));
+  VimeoVideo.afterMount({ props, id });
+
+  global.document = {
+    getElementById: id => {
+      t.equal(id, playerId);
+
+      return {
+        contentWindow: {
+          postMessage: data => {
+            if (data === JSON.stringify({method: 'addEventListener', value: 'play'})) {
+              t.pass('setup play');
+              return;
+            }
+
+            if (data === JSON.stringify({method: 'addEventListener', value: 'pause'})) {
+              t.pass('setup pause');
+              return;
+            }
+
+            if (data === JSON.stringify({method: 'addEventListener', value: 'finish'})) {
+              t.pass('setup finish');
+              return;
+            }
+
+            t.fail();
+          }
+        }
+      };
+    }
+  };
+
+  global.vimeoApiMessageReceived({
+    origin: 'https://player.vimeo.com',
+    data: JSON.stringify({ event: 'ready', player_id: playerId })
+  });
+
+  global.vimeoApiMessageReceived({
+    origin: 'https://player.vimeo.com',
+    data: JSON.stringify({ event: 'play', player_id: playerId })
+  });
+
+  global.vimeoApiMessageReceived({
+    origin: 'https://player.vimeo.com',
+    data: JSON.stringify({ event: 'pause', player_id: playerId })
+  });
+
+  global.vimeoApiMessageReceived({
+    origin: 'https://player.vimeo.com',
+    data: JSON.stringify({ event: 'finish', player_id: playerId })
+  });
+
+  delete global.document;
 });
